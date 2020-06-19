@@ -1,0 +1,23 @@
+<idea-plugin>
+    <id>com.dekonoplyov.KeymapNationalizer</id>
+    <name>Keymap Nationalizer</name>
+    <vendor email="denis.konoplyov@jetbrains.com" url="http://www.jetbrains.com">JetBrains</vendor>
+
+    <description>
+        Keymap nationalizer plugin.
+        "Generate National Keymap" action in "Search Everywhere" menu.
+    </description>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+        <action id="com.dekonoplyov.KeymapNationalizer" class="com.dekonoplyov.KeymapNationalizer"
+                text="Generate National Keymap"/>
+    </actions>
+</idea-plugin>
