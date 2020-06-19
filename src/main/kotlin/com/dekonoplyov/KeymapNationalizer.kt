@@ -21,7 +21,7 @@ import javax.swing.KeyStroke
 internal class KeymapNationalizer : DumbAwareAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
-        val someText = "Generate keymap support for"
+        val someText = "Generate keymap for"
         val replacementsText = "Replace"
         val keymapGenerator = KeymapGenerator()
         val values = keymapGenerator.supportedLocales.values.toArray(emptyArray())
@@ -65,7 +65,7 @@ internal class KeymapNationalizer : DumbAwareAction() {
 
 
 class KeymapGenerator {
-    val supportedLocales = mapOf("de" to "Deutsch",
+    val supportedLocales = mapOf("de" to "German",
             "it" to "Italian",
             "cz" to "Czech",
             "ot" to "Other")
@@ -73,7 +73,7 @@ class KeymapGenerator {
     //"no" to "Norwegian",
 
     var chosenLang = "Deutsch"
-    val deutchReplacement = mapOf(KeyEvent.VK_SEMICOLON to 1014, //ö
+    val germanReplacement = mapOf(KeyEvent.VK_SEMICOLON to 1014, //ö
             KeyEvent.VK_EQUALS to KeyEvent.VK_DEAD_GRAVE,
             KeyEvent.VK_SLASH to KeyEvent.VK_MINUS,
             KeyEvent.VK_DEAD_GRAVE to KeyEvent.VK_LESS,
@@ -134,7 +134,7 @@ class KeymapGenerator {
 
     fun getReplacements(): Map<Int, Int> {
         return when (chosenLang) {
-            "Deutch" -> deutchReplacement
+            "German" -> germanReplacement
             "Italian" -> italianReplacement
             "Czech" -> czechReplacement
             else -> otherReplacement
