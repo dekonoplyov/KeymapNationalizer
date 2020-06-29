@@ -17,7 +17,7 @@
     </extensions>
 
     <actions>
-        <action id="com.dekonoplyov.KeymapNationalizer" class="com.dekonoplyov.KeymapNationalizer"
+        <action id="Keymap Nationalizer" class="com.dekonoplyov.KeymapNationalizer"
                 text="Generate National Keymap"/>
     </actions>
 </idea-plugin>
