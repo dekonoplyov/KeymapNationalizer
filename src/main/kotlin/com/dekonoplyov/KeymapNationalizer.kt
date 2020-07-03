@@ -2,54 +2,51 @@ package com.dekonoplyov
 
 // Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.KeyboardShortcut
-import com.intellij.openapi.keymap.KeymapManager
-import com.intellij.openapi.keymap.KeymapUtil
-import com.intellij.openapi.keymap.ex.KeymapManagerEx
+import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.colors.CodeInsightColors
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.editor.markup.HighlighterLayer
+import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.dialog
-import com.intellij.ui.layout.*
+import com.intellij.ui.layout.applyToComponent
+import com.intellij.ui.layout.panel
 import com.intellij.util.containers.toArray
-import java.awt.KeyboardFocusManager
+import java.awt.Dimension
+import java.awt.event.ItemEvent
 import java.awt.event.KeyEvent
 import javax.swing.DefaultComboBoxModel
-import java.awt.event.ItemEvent
-import javax.swing.JLabel
-import javax.swing.JTextArea
-import javax.swing.KeyStroke
 
 internal class KeymapNationalizer : DumbAwareAction() {
+    var replacementPreview = initEditor()
+    var replacements = mutableMapOf<Int, Int>()
 
     override fun actionPerformed(e: AnActionEvent) {
-        val someText = "Generate keymap for"
-        val replacementsText = "Replace"
-        val keymapGenerator = KeymapGenerator()
-        val values = keymapGenerator.supportedLocales.values.toArray(emptyArray())
-        val replacementPreview = JTextArea(keymapGenerator.generateText())
-
-        val inaccessibleLabel = JLabel(keymapGenerator.inaccessibleKeysLabel())
+        val generateKeymapForText = "Generate keymap for"
+        val replaceText = "Replace"
+        val some = Some()
+        val values = some.supportedLocales.values.toArray(emptyArray())
+        replacementPreview.text = replacementText(some.getReplacements())
 
         dialog(
                 title = "Generate national keymap",
                 panel = panel {
                     row {
-                        inaccessibleLabel()
-                    }
-                    row {
-                        label(someText)
-                        comboBox(DefaultComboBoxModel(values), keymapGenerator::chosenLang)
+                        label(generateKeymapForText)
+                        comboBox(DefaultComboBoxModel(values), some::chosenLang)
                                 .applyToComponent {
                                     addItemListener {
-                                        if (it.stateChange == ItemEvent.SELECTED ) {
-                                            keymapGenerator.chosenLang = it.item as String
-                                            inaccessibleLabel.text = keymapGenerator.inaccessibleKeysLabel()
-                                            replacementPreview.text = keymapGenerator.generateText()
+                                        if (it.stateChange == ItemEvent.SELECTED) {
+                                            some.chosenLang = it.item as String
+                                            replacementPreview.text = replacementText(some.getReplacements())
                                         }
                                     }
                                 }
                     }
                     row {
-                        label(replacementsText)
+                        label(replaceText)
                     }
                     row {
                         replacementPreview()
@@ -57,145 +54,73 @@ internal class KeymapNationalizer : DumbAwareAction() {
                 }
         ).showAndGet().let {
             if (it) {
-                keymapGenerator.generateKeymap()
+                generateKeymap(replacements)
             }
         }
     }
-}
 
-
-class KeymapGenerator {
-    val supportedLocales = mapOf("de" to "German",
-            "it" to "Italian",
-            "cz" to "Czech",
-            "ot" to "Other")
-    //"fr" to "French",
-    //"no" to "Norwegian",
-
-    var chosenLang = "Deutsch"
-    val germanReplacement = mapOf(KeyEvent.VK_SEMICOLON to 1014, //ö
-            KeyEvent.VK_EQUALS to KeyEvent.VK_DEAD_GRAVE,
-            KeyEvent.VK_SLASH to KeyEvent.VK_MINUS,
-            KeyEvent.VK_DEAD_GRAVE to KeyEvent.VK_LESS,
-            KeyEvent.VK_OPEN_BRACKET to 1020, //ü
-            KeyEvent.VK_BACK_SLASH to KeyEvent.VK_NUMBER_SIGN, //#
-            KeyEvent.VK_CLOSE_BRACKET to KeyEvent.VK_PLUS,
-            KeyEvent.VK_QUOTE to 996) //ä
-
-    val italianReplacement = mapOf(KeyEvent.VK_SEMICOLON to 0x10000f2, //ò
-            KeyEvent.VK_EQUALS to 0x10000ec, //ì
-            KeyEvent.VK_MINUS to KeyEvent.VK_QUOTE,
-            KeyEvent.VK_SLASH to KeyEvent.VK_MINUS,
-            KeyEvent.VK_DEAD_GRAVE to KeyEvent.VK_LESS,
-            KeyEvent.VK_OPEN_BRACKET to 0x10000e8, //è
-            KeyEvent.VK_BACK_SLASH to 0x10000f9, //ù
-            KeyEvent.VK_CLOSE_BRACKET to KeyEvent.VK_PLUS,
-            KeyEvent.VK_QUOTE to 0x10000e0) //à
-
-    val czechReplacement = mapOf(KeyEvent.VK_SEMICOLON to KeyEvent.VK_SEMICOLON, //TODO ů
-            KeyEvent.VK_EQUALS to KeyEvent.VK_QUOTE, // '
-            KeyEvent.VK_MINUS to KeyEvent.VK_EQUALS,
-            KeyEvent.VK_SLASH to KeyEvent.VK_MINUS,
-            KeyEvent.VK_DEAD_GRAVE to KeyEvent.VK_SLASH,
-            KeyEvent.VK_OPEN_BRACKET to 0x10000fa, //ú
-            KeyEvent.VK_BACK_SLASH to KeyEvent.VK_BACK_SLASH, //TODO ¨
-            KeyEvent.VK_CLOSE_BRACKET to KeyEvent.VK_CLOSE_BRACKET, // TODO )
-            KeyEvent.VK_QUOTE to KeyEvent.VK_QUOTE) // TODO §
-
-    val otherReplacement = mapOf(KeyEvent.VK_SEMICOLON to KeyEvent.VK_SEMICOLON,
-            KeyEvent.VK_EQUALS to KeyEvent.VK_EQUALS,
-            KeyEvent.VK_COMMA to KeyEvent.VK_COMMA,
-            KeyEvent.VK_MINUS to KeyEvent.VK_MINUS,
-            KeyEvent.VK_PERIOD to KeyEvent.VK_PERIOD,
-            KeyEvent.VK_SLASH to KeyEvent.VK_SLASH,
-            KeyEvent.VK_DEAD_GRAVE to KeyEvent.VK_DEAD_GRAVE,
-            KeyEvent.VK_OPEN_BRACKET to KeyEvent.VK_OPEN_BRACKET,
-            KeyEvent.VK_BACK_SLASH to KeyEvent.VK_BACK_SLASH,
-            KeyEvent.VK_CLOSE_BRACKET to KeyEvent.VK_CLOSE_BRACKET,
-            KeyEvent.VK_QUOTE to KeyEvent.VK_QUOTE)
-
-    fun isSupportedLocale(): Boolean {
-        // FIXME detect locale
-        val locale = KeyboardFocusManager.getCurrentKeyboardFocusManager()?.focusOwner?.inputContext?.locale
-        println(locale)
-        if (locale != null) {
-            return supportedLocales.contains(locale.language)
+    private fun initEditor(): EditorTextField {
+        val document = EditorFactory.getInstance().createDocument("")
+        val replacementPreview = EditorTextField(document, null, FileTypes.PLAIN_TEXT,
+                false, false)
+        replacementPreview.preferredSize = Dimension(300, 350)
+        replacementPreview.addSettingsProvider { editor ->
+            editor.setVerticalScrollbarVisible(true)
+            editor.setHorizontalScrollbarVisible(true)
+            editor.settings.additionalLinesCount = 2
         }
-        return false
-    }
-
-    fun inaccessibleKeysLabel(): String {
-        return "<html>Your keyboard is missing these primary keys: " + getInaccessibleKeys() + "</html>"
-    }
-
-    fun getInaccessibleKeys(): String {
-        return getReplacements().keys.map { keyToText(it) }.joinToString("</b> <b>", "<b>", "</b>")
-    }
-
-    fun getReplacements(): Map<Int, Int> {
-        return when (chosenLang) {
-            "German" -> germanReplacement
-            "Italian" -> italianReplacement
-            "Czech" -> czechReplacement
-            else -> otherReplacement
-        }
-    }
-
-    fun keyToText(key: Int): String {
-        if (key == KeyEvent.VK_DEAD_GRAVE) {
-            return "`"
-        }
-        return KeymapUtil.getKeyText(key)
-    }
-
-    fun generateText(): String {
-        val s = StringBuilder()
-
-        for (r in getReplacements()) {
-            s.append("${keyToText(r.key)} with ${keyToText(r.value)}\n")
-        }
-
-        return s.toString()
-    }
-
-    fun generateKeymap() {
-        val replacements = getReplacements()
-
-        val keymapManager = KeymapManager.getInstance()
-        val activeKeymap = keymapManager.activeKeymap
-        val nationalKeymap = activeKeymap.deriveKeymap(activeKeymap.name + " with national support")
-
-        for (actionId in nationalKeymap.actionIdList) {
-            for (shortcut in nationalKeymap.getShortcuts(actionId)) {
-                if (shortcut !is KeyboardShortcut) {
-                    continue
-                }
-
-                var shouldMerge = replacements.containsKey(shortcut.firstKeyStroke.keyCode)
-                shouldMerge = shouldMerge or replacements.containsKey(shortcut.secondKeyStroke?.keyCode)
-
-                if (shouldMerge) {
-                    val merged = merge(shortcut, replacements)
-                    nationalKeymap.removeShortcut(actionId, shortcut)
-                    nationalKeymap.addShortcut(actionId, merged)
-                }
+        replacementPreview.addDocumentListener(object : DocumentListener {
+            override fun documentChanged(e: DocumentEvent) {
+                update()
             }
-        }
-        (keymapManager as KeymapManagerEx?)?.schemeManager?.addScheme(nationalKeymap)
-        (keymapManager as KeymapManagerEx).activeKeymap = nationalKeymap
+        })
+
+        return replacementPreview
     }
 
-    private fun merge(shortcut: KeyboardShortcut, replacements: Map<Int, Int>): KeyboardShortcut {
-        if (shortcut.secondKeyStroke == null) {
-            return KeyboardShortcut(merge(shortcut.firstKeyStroke, replacements), null)
+    private fun update(): Boolean {
+        val editor = replacementPreview.editor ?: return false
+        var containsErrors = false
+        replacements = mutableMapOf()
+        replacementPreview.text
+                .split("\n")
+                .forEachIndexed { index, s ->
+                    val processed = s.trim().toLowerCase()
+                    if (processed.isEmpty()) return@forEachIndexed
+                    val replacement = validateReplacement(processed)
+                    if (replacement == null) {
+                        containsErrors = true
+                        editor.markupModel.addLineHighlighter(index,
+                                HighlighterLayer.ERROR,
+                                editor.colorsScheme.getAttributes(CodeInsightColors.ERRORS_ATTRIBUTES))
+                        return@forEachIndexed
+                    } else {
+                        replacements[replacement.first] = replacement.second
+                    }
+                }
+        if (!containsErrors) {
+            editor.markupModel.removeAllHighlighters()
         }
-        return KeyboardShortcut(merge(shortcut.firstKeyStroke, replacements),
-                merge(shortcut.secondKeyStroke!!, replacements))
-    }
-
-    private fun merge(stroke: KeyStroke, replacements: Map<Int, Int>): KeyStroke {
-        val replacement = replacements[stroke.keyCode] ?: return stroke
-        return KeyStroke.getKeyStroke(replacement, stroke.modifiers, stroke.isOnKeyRelease)
+        return containsErrors
     }
 }
 
+// line should be trimmed and lowerCased
+fun validateReplacement(line: String): Pair<Int, Int>? {
+    val fromTo = line.split(" with ")
+    if (fromTo.size != 2) {
+        return null
+    }
+    val from = fromTo[0].trim()
+    val to = fromTo[1].trim()
+    if ((from.length != 1) or (to.length != 1)) {
+        return null
+    }
+
+    val fromKeyCode = getExtendedKeyCodeForChar(from[0].toInt())
+    val toKeyCode = getExtendedKeyCodeForChar(to[0].toInt())
+    if (fromKeyCode != KeyEvent.VK_UNDEFINED && toKeyCode != KeyEvent.VK_UNDEFINED) {
+        return fromKeyCode to toKeyCode
+    }
+    return null
+}
