@@ -26,21 +26,21 @@ internal class KeymapNationalizer : DumbAwareAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val generateKeymapForText = "Generate keymap for"
         val replaceText = "Replace"
-        val some = Some()
-        val values = some.supportedLocales.values.toArray(emptyArray())
-        replacementPreview.text = replacementText(some.getReplacements())
+        val predefined = Predefined()
+        val values = predefined.values.keys.toArray(emptyArray())
+        replacementPreview.text = predefined.getReplacements()
 
         dialog(
                 title = "Generate national keymap",
                 panel = panel {
                     row {
                         label(generateKeymapForText)
-                        comboBox(DefaultComboBoxModel(values), some::chosenLang)
+                        comboBox(DefaultComboBoxModel(values), predefined::chosenLang)
                                 .applyToComponent {
                                     addItemListener {
                                         if (it.stateChange == ItemEvent.SELECTED) {
-                                            some.chosenLang = it.item as String
-                                            replacementPreview.text = replacementText(some.getReplacements())
+                                            predefined.chosenLang = it.item as String
+                                            replacementPreview.text = predefined.getReplacements()
                                         }
                                     }
                                 }
@@ -63,7 +63,7 @@ internal class KeymapNationalizer : DumbAwareAction() {
         val document = EditorFactory.getInstance().createDocument("")
         val replacementPreview = EditorTextField(document, null, FileTypes.PLAIN_TEXT,
                 false, false)
-        replacementPreview.preferredSize = Dimension(300, 350)
+        replacementPreview.preferredSize = Dimension(300, 280)
         replacementPreview.addSettingsProvider { editor ->
             editor.setVerticalScrollbarVisible(true)
             editor.setHorizontalScrollbarVisible(true)
@@ -104,5 +104,3 @@ internal class KeymapNationalizer : DumbAwareAction() {
         return containsErrors
     }
 }
-
-

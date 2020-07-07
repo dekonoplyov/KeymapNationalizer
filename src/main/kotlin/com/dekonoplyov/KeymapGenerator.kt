@@ -2,32 +2,13 @@ package com.dekonoplyov
 
 import com.intellij.openapi.actionSystem.KeyboardShortcut
 import com.intellij.openapi.keymap.KeymapManager
-import com.intellij.openapi.keymap.KeymapUtil
 import com.intellij.openapi.keymap.ex.KeymapManagerEx
-import java.awt.event.KeyEvent
 import javax.swing.KeyStroke
-
-fun keyToText(key: Int): String {
-    if (key == KeyEvent.VK_DEAD_GRAVE) {
-        return "`"
-    }
-    return KeymapUtil.getKeyText(key)
-}
-
-fun replacementText(replacements: Map<Int, Int>): String {
-    val s = StringBuilder()
-
-    for (r in replacements) {
-        s.append("${keyToText(r.key)} with ${keyToText(r.value)}\n")
-    }
-
-    return s.toString()
-}
 
 fun generateKeymap(replacements: Map<KeyCode, KeyStroke>) {
     val keymapManager = KeymapManager.getInstance()
     val activeKeymap = keymapManager.activeKeymap
-    val nationalKeymap = activeKeymap.deriveKeymap(activeKeymap.name + " with national support")
+    val nationalKeymap = activeKeymap.deriveKeymap(activeKeymap.presentableName + " generated")
 
     for (actionId in nationalKeymap.actionIdList) {
         for (shortcut in nationalKeymap.getShortcuts(actionId)) {
