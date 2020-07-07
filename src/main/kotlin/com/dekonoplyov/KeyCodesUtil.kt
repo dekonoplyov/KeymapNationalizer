@@ -4,6 +4,7 @@ import java.awt.event.KeyEvent
 
 // Copy of sun.awt.ExtendedKeyCodes
 // this version don't prefer Upper Case
+// check test/kotlin/KeyCodesTest for more
 fun getExtendedKeyCodeForChar(c: Int): Int {
     if (REGULAR_KEY_CODES_MAP.containsKey(c)) {
         return REGULAR_KEY_CODES_MAP[c]!!

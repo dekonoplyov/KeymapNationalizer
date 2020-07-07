@@ -85,7 +85,7 @@ internal class KeymapNationalizer : DumbAwareAction() {
         replacementPreview.text
                 .split("\n")
                 .forEachIndexed { index, s ->
-                    val processed = s.trim().toLowerCase()
+                    val processed = StringProcessor.process(s)
                     if (processed.isEmpty()) return@forEachIndexed
                     val replacement = parseReplacement(processed)
                     if (replacement == null) {

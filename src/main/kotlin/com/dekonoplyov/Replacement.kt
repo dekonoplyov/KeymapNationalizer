@@ -6,13 +6,13 @@ import javax.swing.KeyStroke
 typealias KeyCode = Int
 typealias Replacement = Pair<KeyCode, KeyStroke>
 
-// line should be trimmed and lowerCased
+// line should be StringProcessor.process(line)
 fun parseReplacement(line: String): Replacement? {
     val fromTo = line.split(" with ")
     if (fromTo.size != 2) {
         return null
     }
-    val from = fromTo[0].trim()
+    val from = fromTo[0]
     if (from.length != 1) {
         return null
     }
@@ -21,19 +21,21 @@ fun parseReplacement(line: String): Replacement? {
         return null
     }
 
-    val keyStroke = parseKeyStroke(fromTo[1].trim()) ?: return null
+    val keyStroke = parseKeyStroke(fromTo[1]) ?: return null
 
     return keyCode to keyStroke
 }
 
-
-// lower cased string
-private fun parseKeyStroke(to: String): KeyStroke? {
+// line should be StringProcessor.process(line)
+fun parseKeyStroke(to: String): KeyStroke? {
     val modsKeyCode = to.split(" ")
     if (modsKeyCode.isEmpty() || modsKeyCode.last().length != 1) {
         return null
     }
     val keyCode = getExtendedKeyCodeForChar(modsKeyCode.last()[0].toInt())
+    if (keyCode == KeyEvent.VK_UNDEFINED) {
+        return null
+    }
 
     val tokens = modsKeyCode.dropLast(1).toMutableSet()
     var mods = 0
