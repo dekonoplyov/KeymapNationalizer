@@ -16,12 +16,12 @@ import com.intellij.ui.layout.panel
 import com.intellij.util.containers.toArray
 import java.awt.Dimension
 import java.awt.event.ItemEvent
-import java.awt.event.KeyEvent
 import javax.swing.DefaultComboBoxModel
+import javax.swing.KeyStroke
 
 internal class KeymapNationalizer : DumbAwareAction() {
     var replacementPreview = initEditor()
-    var replacements = mutableMapOf<Int, Int>()
+    var replacements = mutableMapOf<KeyCode, KeyStroke>()
 
     override fun actionPerformed(e: AnActionEvent) {
         val generateKeymapForText = "Generate keymap for"
@@ -87,7 +87,7 @@ internal class KeymapNationalizer : DumbAwareAction() {
                 .forEachIndexed { index, s ->
                     val processed = s.trim().toLowerCase()
                     if (processed.isEmpty()) return@forEachIndexed
-                    val replacement = validateReplacement(processed)
+                    val replacement = parseReplacement(processed)
                     if (replacement == null) {
                         containsErrors = true
                         editor.markupModel.addLineHighlighter(index,
@@ -105,22 +105,4 @@ internal class KeymapNationalizer : DumbAwareAction() {
     }
 }
 
-// line should be trimmed and lowerCased
-fun validateReplacement(line: String): Pair<Int, Int>? {
-    val fromTo = line.split(" with ")
-    if (fromTo.size != 2) {
-        return null
-    }
-    val from = fromTo[0].trim()
-    val to = fromTo[1].trim()
-    if ((from.length != 1) or (to.length != 1)) {
-        return null
-    }
 
-    val fromKeyCode = getExtendedKeyCodeForChar(from[0].toInt())
-    val toKeyCode = getExtendedKeyCodeForChar(to[0].toInt())
-    if (fromKeyCode != KeyEvent.VK_UNDEFINED && toKeyCode != KeyEvent.VK_UNDEFINED) {
-        return fromKeyCode to toKeyCode
-    }
-    return null
-}

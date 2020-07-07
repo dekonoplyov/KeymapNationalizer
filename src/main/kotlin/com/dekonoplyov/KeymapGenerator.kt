@@ -24,7 +24,7 @@ fun replacementText(replacements: Map<Int, Int>): String {
     return s.toString()
 }
 
-fun generateKeymap(replacements: Map<Int, Int>) {
+fun generateKeymap(replacements: Map<KeyCode, KeyStroke>) {
     val keymapManager = KeymapManager.getInstance()
     val activeKeymap = keymapManager.activeKeymap
     val nationalKeymap = activeKeymap.deriveKeymap(activeKeymap.name + " with national support")
@@ -36,7 +36,7 @@ fun generateKeymap(replacements: Map<Int, Int>) {
             }
 
             var shouldMerge = replacements.containsKey(shortcut.firstKeyStroke.keyCode)
-            shouldMerge = shouldMerge or replacements.containsKey(shortcut.secondKeyStroke?.keyCode)
+            shouldMerge = shouldMerge || replacements.containsKey(shortcut.secondKeyStroke?.keyCode)
 
             if (shouldMerge) {
                 val merged = merge(shortcut, replacements)
@@ -49,7 +49,7 @@ fun generateKeymap(replacements: Map<Int, Int>) {
     (keymapManager as KeymapManagerEx).activeKeymap = nationalKeymap
 }
 
-private fun merge(shortcut: KeyboardShortcut, replacements: Map<Int, Int>): KeyboardShortcut {
+private fun merge(shortcut: KeyboardShortcut, replacements: Map<KeyCode, KeyStroke>): KeyboardShortcut {
     if (shortcut.secondKeyStroke == null) {
         return KeyboardShortcut(merge(shortcut.firstKeyStroke, replacements), null)
     }
@@ -57,7 +57,8 @@ private fun merge(shortcut: KeyboardShortcut, replacements: Map<Int, Int>): Keyb
             merge(shortcut.secondKeyStroke!!, replacements))
 }
 
-private fun merge(stroke: KeyStroke, replacements: Map<Int, Int>): KeyStroke {
+private fun merge(stroke: KeyStroke, replacements: Map<KeyCode, KeyStroke>): KeyStroke {
     val replacement = replacements[stroke.keyCode] ?: return stroke
-    return KeyStroke.getKeyStroke(replacement, stroke.modifiers, stroke.isOnKeyRelease)
+    val mods = stroke.modifiers or replacement.modifiers
+    return KeyStroke.getKeyStroke(replacement.keyCode, mods, stroke.isOnKeyRelease)
 }
