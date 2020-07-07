@@ -7,34 +7,34 @@ typealias KeyCode = Int
 typealias Replacement = Pair<KeyCode, KeyStroke>
 
 // line should be StringProcessor.process(line)
-fun parseReplacement(line: String): Replacement? {
+fun parseReplacement(line: String): Replacement {
     val fromTo = line.split(" with ")
     if (fromTo.size != 2) {
-        return null
+        throw RuntimeException("Failed to parse: \"$line\"")
     }
     val from = fromTo[0]
     if (from.length != 1) {
-        return null
+        throw RuntimeException("Failed to parse key: \"$from\"")
     }
     val keyCode = getExtendedKeyCodeForChar(from[0].toInt())
     if (keyCode == KeyEvent.VK_UNDEFINED) {
-        return null
+        throw RuntimeException("Failed to parse key: \"$from\"")
     }
 
-    val keyStroke = parseKeyStroke(fromTo[1]) ?: return null
+    val keyStroke = parseKeyStroke(fromTo[1])
 
     return keyCode to keyStroke
 }
 
 // line should be StringProcessor.process(line)
-fun parseKeyStroke(to: String): KeyStroke? {
+fun parseKeyStroke(to: String): KeyStroke {
     val modsKeyCode = to.split(" ")
     if (modsKeyCode.isEmpty() || modsKeyCode.last().length != 1) {
-        return null
+        throw RuntimeException("Failed to parse: \"$to\"")
     }
     val keyCode = getExtendedKeyCodeForChar(modsKeyCode.last()[0].toInt())
     if (keyCode == KeyEvent.VK_UNDEFINED) {
-        return null
+        throw RuntimeException("Failed to parse key: \"${modsKeyCode.last()}\"")
     }
 
     val tokens = modsKeyCode.dropLast(1).toMutableSet()
@@ -59,6 +59,5 @@ fun parseKeyStroke(to: String): KeyStroke? {
     if (tokens.isEmpty()) {
         return KeyStroke.getKeyStroke(keyCode, mods)
     }
-
-    return null
+    throw RuntimeException("Failed to parse: \"${tokens.joinToString(" ")}\"")
 }
