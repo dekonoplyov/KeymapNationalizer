@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.dekonoplyov"
-version = "0.1"
+version = "0.2"
 
 repositories {
     mavenCentral()
@@ -38,5 +38,8 @@ tasks {
 }
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
-      Minimal functionality""")
+      - Parse and validate user input.
+      - Add modifiers: Shift Alt Ctrl Meta
+      - Hint and editor ui to show errors.
+      """)
 }

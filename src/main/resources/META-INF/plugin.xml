@@ -6,6 +6,9 @@
     <description>
         Keymap nationalizer plugin.
         "Generate National Keymap" action in "Search Everywhere" menu.
+        You can replace shortcuts in Keymap.
+        "; with alt [" will replace all shortcuts with ; to [ and add alt modifier.
+        https://github.com/dekonoplyov/KeymapNationalizer
     </description>
 
     <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
