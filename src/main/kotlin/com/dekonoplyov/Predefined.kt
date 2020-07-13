@@ -50,11 +50,11 @@ private const val CZECH = """; with ů
 """
 
 private const val OTHER = """; with ;
-= with '
-- with =
-/ with -
-` with /
-[ with ú
+= with =
+- with -
+/ with /
+` with `
+[ with [
 \ with \
 ] with ]
 ' with '

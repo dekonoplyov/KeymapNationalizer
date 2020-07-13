@@ -12,58 +12,57 @@ import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.EditorTextField
+import com.intellij.ui.components.dialog
 import com.intellij.ui.layout.applyToComponent
 import com.intellij.ui.layout.panel
 import com.intellij.util.containers.toArray
 import java.awt.Dimension
 import java.awt.event.ItemEvent
 import javax.swing.DefaultComboBoxModel
-import javax.swing.JComponent
 import javax.swing.KeyStroke
 
 internal class KeymapNationalizer : DumbAwareAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        val d = KeymapNationalizerDialog()
-        d.showAndGet().let {
-            if (it) {
-                generateKeymap(d.replacements)
-            }
-        }
-    }
-}
+        val predefined = Predefined()
+        val replacementPreview = initEditor()
 
-class KeymapNationalizerDialog : DialogWrapper(null) {
-    val predefined = Predefined()
-    val values = predefined.values.keys.toArray(emptyArray())
-    var replacementPreview = initEditor()
-    var replacements = mutableMapOf<KeyCode, KeyStroke>()
-
-    init {
-        isModal = true
-
-        init()
-    }
-
-    override fun createCenterPanel(): JComponent? {
-
-        return panel {
-            row {
-                label("Generate keymap for")
-                comboBox(DefaultComboBoxModel(values), predefined::chosenLang)
-                        .applyToComponent {
-                            addItemListener {
-                                if (it.stateChange == ItemEvent.SELECTED) {
-                                    predefined.chosenLang = it.item as String
-                                    replacementPreview.text = predefined.getReplacements()
+        val dialogue = dialog(
+                title = "",
+                panel = panel {
+                    row {
+                        label("Generate keymap for")
+                        comboBox(DefaultComboBoxModel(predefined.values.keys.toArray(emptyArray())),
+                                predefined::chosenLang)
+                                .applyToComponent {
+                                    addItemListener {
+                                        if (it.stateChange == ItemEvent.SELECTED) {
+                                            predefined.chosenLang = it.item as String
+                                            replacementPreview.text = predefined.getReplacements()
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                    }
+                    row {
+                        label("Replace")
+                    }
+                    row {
+                        replacementPreview()
+                    }
+                }
+        )
+
+        val validator = DataValidator(replacementPreview, dialogue)
+        replacementPreview.addDocumentListener(object : DocumentListener {
+            override fun documentChanged(e: DocumentEvent) {
+                validator.validate()
             }
-            row {
-                label("Replace")
-            }
-            row {
-                replacementPreview()
+        })
+        replacementPreview.text = predefined.getReplacements()
+
+        dialogue.showAndGet().let {
+            val replacements = validator.validate()
+            if (it && replacements != null) {
+                generateKeymap(replacements)
             }
         }
     }
@@ -78,32 +77,27 @@ class KeymapNationalizerDialog : DialogWrapper(null) {
             editor.setHorizontalScrollbarVisible(true)
             editor.settings.additionalLinesCount = 2
         }
-        replacementPreview.addDocumentListener(object : DocumentListener {
-            override fun documentChanged(e: DocumentEvent) {
-                val isOkToErr = update()
-                isOKActionEnabled = isOkToErr
-            }
-        })
-
-        replacementPreview.text = predefined.getReplacements()
 
         return replacementPreview
     }
+}
 
-    private fun update(): Boolean {
-        val editor = replacementPreview.editor ?: return true
+class DataValidator(private val replacementPreview: EditorTextField,
+                    private val dialogue: DialogWrapper) {
+    fun validate(): Map<KeyCode, KeyStroke>? {
         var isOk = true
-        replacements = mutableMapOf()
+        val replacements = mutableMapOf<KeyCode, KeyStroke>()
         replacementPreview.text
                 .split("\n")
                 .forEachIndexed { index, s ->
                     val processed = StringProcessor.process(s)
                     if (processed.isEmpty()) return@forEachIndexed
                     try {
-                        val  replacement = parseReplacement(processed)
+                        val replacement = parseReplacement(processed)
                         replacements[replacement.first] = replacement.second
                     } catch (e: RuntimeException) {
                         isOk = false
+                        val editor = replacementPreview.editor ?: return@forEachIndexed
                         HintManagerImpl.getInstanceImpl().showErrorHint(editor, e.message!!)
                         editor.markupModel.addLineHighlighter(index,
                                 HighlighterLayer.ERROR,
@@ -111,9 +105,11 @@ class KeymapNationalizerDialog : DialogWrapper(null) {
                         return@forEachIndexed
                     }
                 }
+        dialogue.isOKActionEnabled = isOk
         if (isOk) {
-            editor.markupModel.removeAllHighlighters()
+            replacementPreview.editor?.markupModel?.removeAllHighlighters()
+            return replacements
         }
-        return isOk
+        return null
     }
 }

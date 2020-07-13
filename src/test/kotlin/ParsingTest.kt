@@ -24,18 +24,18 @@ class ParsingTest {
 
     @Test
     fun parseFail() {
-        assertNull(parseReplacementWrapper(""))
-        assertNull(parseReplacementWrapper("ab"))
-        assertNull(parseReplacementWrapper("Non with b"))
-        assertNull(parseReplacementWrapper("a with Non"))
-        assertNull(parseReplacementWrapper(" with b"))
-        assertNull(parseReplacementWrapper("a with "))
-        assertNull(parseReplacementWrapper("a with "))
-        assertNull(parseReplacementWrapper("a with b sideli na trube"))
-        assertNull(parseReplacementWrapper("a with ctrl  "))
-        assertNull(parseReplacementWrapper("a with ctrl some b"))
-        assertNull(parseReplacementWrapper("字 with b"))
-        assertNull(parseReplacementWrapper("a with 字"))
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("ab") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("Non with b") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("a with Non") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper(" with b") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("a with ") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("a with ") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("a with b sideli na trube") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("a with ctrl  ") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("a with ctrl some b") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("字 with b") }
+        assertFailsWith<RuntimeException> { parseReplacementWrapper("a with 字") }
     }
 
     @Test
@@ -50,12 +50,16 @@ class ParsingTest {
 
     @Test
     fun parseMods() {
-        val mods = mergePowerSet(powerset(listOf(
-                Pair(KeyEvent.SHIFT_DOWN_MASK, "shift"),
-                Pair(KeyEvent.ALT_DOWN_MASK, "alt"),
-                Pair(KeyEvent.META_DOWN_MASK, "meta"),
-                Pair(KeyEvent.CTRL_DOWN_MASK, "ctrl")
-        )))
+        val mods = mergePowerSet(
+            powerset(
+                listOf(
+                    Pair(KeyEvent.SHIFT_DOWN_MASK, "shift"),
+                    Pair(KeyEvent.ALT_DOWN_MASK, "alt"),
+                    Pair(KeyEvent.META_DOWN_MASK, "meta"),
+                    Pair(KeyEvent.CTRL_DOWN_MASK, "ctrl")
+                )
+            )
+        )
 
         for (modsToStringMods in mods) {
             val str = modsToStringMods.second + " b"
@@ -85,7 +89,7 @@ class ParsingTest {
         }
         return l
     }
-    
+
     private fun <T> powerset(c: Collection<T>): Set<Set<T>> = when {
         c.isEmpty() -> setOf(setOf())
         else -> powerset(c.drop(1)).let { it -> it + it.map { it + c.first() } }

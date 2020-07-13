@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.dekonoplyov"
-version = "0.2.1"
+version = "0.2.2"
 
 repositories {
     mavenCentral()
@@ -36,17 +36,11 @@ tasks {
         token(System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken"))
     }
     patchPluginXml {
-        sinceBuild("201.*")
         untilBuild("203.*")
     }
 }
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
-    <![CDATA[
-      - Parse and validate user input.<br>
-      - Add modifiers: Shift Alt Ctrl Meta<br>
-      - Hint and editor ui to show errors.<br>
-      - Version compatibility 
-    ]]>
-      """)
+    - Fix empty change in keymap and NPE
+    """)
 }
