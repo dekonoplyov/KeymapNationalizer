@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.dekonoplyov"
-version = "0.2.2"
+version = "0.2.3"
 
 repositories {
     mavenCentral()
@@ -41,6 +41,6 @@ tasks {
 }
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
-    - Fix empty change in keymap and NPE
+    - Fix german '='(´)  key
     """)
 }

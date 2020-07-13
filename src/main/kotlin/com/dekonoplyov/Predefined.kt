@@ -18,7 +18,7 @@ class Predefined {
 }
 
 private const val GERMAN = """; with ö
-= with `
+= with ´
 / with -
 ` with <
 [ with ü
