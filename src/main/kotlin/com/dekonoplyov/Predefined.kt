@@ -25,6 +25,7 @@ private const val GERMAN = """; with ö
 \ with #
 ] with +
 ' with ä
+- with ß
 """
 
 private const val ITALIAN = """; with ò

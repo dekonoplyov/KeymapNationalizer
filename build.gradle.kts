@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.dekonoplyov"
-version = "0.2.3"
+version = "0.2.4"
 
 repositories {
     mavenCentral()
@@ -41,6 +41,6 @@ tasks {
 }
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
-    - Fix german '='(´)  key
+    - Add "- with ß" rule to German layout
     """)
 }
