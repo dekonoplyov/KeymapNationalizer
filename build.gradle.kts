@@ -36,7 +36,7 @@ tasks {
         token(System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken"))
     }
     patchPluginXml {
-        untilBuild("203.*")
+        untilBuild("213.*")
     }
 }
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {

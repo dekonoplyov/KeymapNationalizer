@@ -160,6 +160,7 @@ private val REGULAR_KEY_CODES_MAP = mapOf(
 
 private val EXTENDED_KEY_CODE_SET = setOf(
         0x01000000 + 0x0060,
+        0x01000000 + 0x0025,
         0x01000000 + 0x007C,
         0x01000000 + 0x007E,
         0x01000000 + 0x00A2,
