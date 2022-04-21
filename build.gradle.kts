@@ -1,11 +1,11 @@
 plugins {
     id("org.jetbrains.intellij") version "0.4.21"
     java
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.6.20"
 }
 
 group = "com.dekonoplyov"
-version = "0.2.6"
+version = "0.2.7"
 
 repositories {
     mavenCentral()
@@ -20,7 +20,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version = "2020.1.2"
+    version = "2021.1"
 }
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -36,11 +36,11 @@ tasks {
         token(System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken"))
     }
     patchPluginXml {
-        untilBuild("213.*")
+        untilBuild("223.*")
     }
 }
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
-    - Fix failed to parse % key. Update intellij version.
+    - Update intellij and kotlin plugin versions
     """)
 }
