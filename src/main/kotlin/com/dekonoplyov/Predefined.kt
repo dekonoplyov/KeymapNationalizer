@@ -4,6 +4,7 @@ class Predefined {
     var chosenLang = "German"
 
     val values = mapOf(
+            "French" to FRENCH
             "German" to GERMAN,
             "Italian" to ITALIAN,
             "Czech" to CZECH,
@@ -16,6 +17,17 @@ class Predefined {
         return some ?: OTHER
     }
 }
+
+private const val FRENCH = """; with ;
+= with =
+/ with :
+` with è
+[ with (
+\ with _
+] with )
+' with '
+- with -
+"""
 
 private const val GERMAN = """; with ö
 = with ´
