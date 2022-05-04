@@ -4,7 +4,7 @@ class Predefined {
     var chosenLang = "German"
 
     val values = mapOf(
-            "French" to FRENCH
+            "French" to FRENCH,
             "German" to GERMAN,
             "Italian" to ITALIAN,
             "Czech" to CZECH,
