@@ -1,46 +1,48 @@
 plugins {
-    id("org.jetbrains.intellij") version "0.4.21"
-    java
-    kotlin("jvm") version "1.6.20"
+    id("java")
+    id("org.jetbrains.kotlin.jvm") version "1.7.20"
+    id("org.jetbrains.intellij") version "1.13.1"
 }
 
 group = "com.dekonoplyov"
-version = "0.2.7"
+version = "0.2.8"
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation(kotlin("stdlib-jdk8" ))
-    implementation(kotlin("reflect"))
-
-    testImplementation("junit", "junit", "4.12")
-}
-
-// See https://github.com/JetBrains/gradle-intellij-plugin/
+// Configure Gradle IntelliJ Plugin
+// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version = "2021.1"
+    version.set("2022.2.4")
+    type.set("IC") // Target IDE Platform
+
+    plugins.set(listOf(
+    ))
 }
-configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-}
+
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+    // Set the JVM compatibility versions
+    withType<JavaCompile> {
+        sourceCompatibility = "11"
+        targetCompatibility = "11"
     }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions.jvmTarget = "11"
     }
-    publishPlugin {
-        token(System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken"))
-    }
+
     patchPluginXml {
-        untilBuild("223.*")
+        sinceBuild.set("222")
+        untilBuild.set("233.*")
     }
-}
-tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
-    changeNotes("""
-    - Update intellij and kotlin plugin versions
-    """)
+
+//    signPlugin {
+//        certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
+//        privateKey.set(System.getenv("PRIVATE_KEY"))
+//        password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
+//    }
+
+    publishPlugin {
+        token.set(System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken"))
+    }
 }

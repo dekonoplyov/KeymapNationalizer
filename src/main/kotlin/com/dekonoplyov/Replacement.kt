@@ -16,7 +16,7 @@ fun parseReplacement(line: String): Replacement {
     if (from.length != 1) {
         throw RuntimeException("Failed to parse key: \"$from\"")
     }
-    val keyCode = getExtendedKeyCodeForChar(from[0].toInt())
+    val keyCode = getExtendedKeyCodeForChar(from[0].code)
     if (keyCode == KeyEvent.VK_UNDEFINED) {
         throw RuntimeException("Failed to parse key: \"$from\"")
     }
@@ -32,7 +32,7 @@ fun parseKeyStroke(to: String): KeyStroke {
     if (modsKeyCode.isEmpty() || modsKeyCode.last().length != 1) {
         throw RuntimeException("Failed to parse: \"$to\"")
     }
-    val keyCode = getExtendedKeyCodeForChar(modsKeyCode.last()[0].toInt())
+    val keyCode = getExtendedKeyCodeForChar(modsKeyCode.last()[0].code)
     if (keyCode == KeyEvent.VK_UNDEFINED) {
         throw RuntimeException("Failed to parse key: \"${modsKeyCode.last()}\"")
     }

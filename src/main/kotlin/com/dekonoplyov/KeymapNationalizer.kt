@@ -13,8 +13,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.dialog
-import com.intellij.ui.layout.applyToComponent
-import com.intellij.ui.layout.panel
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.containers.toArray
 import java.awt.Dimension
 import java.awt.event.ItemEvent
@@ -24,32 +23,30 @@ import javax.swing.KeyStroke
 internal class KeymapNationalizer : DumbAwareAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val predefined = Predefined()
+        val items = predefined.values.keys.toArray(emptyArray())
+        predefined.chosenLang = items[0]
         val replacementPreview = initEditor()
 
-        val dialogue = dialog(
-                title = "",
-                panel = panel {
-                    row {
-                        label("Generate keymap for")
-                        comboBox(DefaultComboBoxModel(predefined.values.keys.toArray(emptyArray())),
-                                predefined::chosenLang)
-                                .applyToComponent {
-                                    addItemListener {
-                                        if (it.stateChange == ItemEvent.SELECTED) {
-                                            predefined.chosenLang = it.item as String
-                                            replacementPreview.text = predefined.getReplacements()
-                                        }
-                                    }
-                                }
+        val dialogue = dialog(title = "", panel = panel {
+            row {
+                label("Generate keymap for")
+                comboBox(DefaultComboBoxModel(items))
+                    .applyToComponent {
+                        addItemListener {
+                            if (it.stateChange == ItemEvent.SELECTED) {
+                                predefined.chosenLang = it.item as String
+                                replacementPreview.text = predefined.getReplacements()
+                            }
+                        }
                     }
-                    row {
-                        label("Replace")
-                    }
-                    row {
-                        replacementPreview()
-                    }
-                }
-        )
+            }
+            row {
+                label("Replace")
+            }
+            row {
+                cell(replacementPreview.component)
+            }
+        })
 
         val validator = DataValidator(replacementPreview, dialogue)
         replacementPreview.addDocumentListener(object : DocumentListener {
@@ -69,8 +66,9 @@ internal class KeymapNationalizer : DumbAwareAction() {
 
     private fun initEditor(): EditorTextField {
         val document = EditorFactory.getInstance().createDocument("")
-        val replacementPreview = EditorTextField(document, null, FileTypes.PLAIN_TEXT,
-                false, false)
+        val replacementPreview = EditorTextField(
+            document, null, FileTypes.PLAIN_TEXT, false, false
+        )
         replacementPreview.preferredSize = Dimension(300, 280)
         replacementPreview.addSettingsProvider { editor ->
             editor.setVerticalScrollbarVisible(true)
@@ -82,29 +80,30 @@ internal class KeymapNationalizer : DumbAwareAction() {
     }
 }
 
-class DataValidator(private val replacementPreview: EditorTextField,
-                    private val dialogue: DialogWrapper) {
+class DataValidator(
+    private val replacementPreview: EditorTextField, private val dialogue: DialogWrapper
+) {
     fun validate(): Map<KeyCode, KeyStroke>? {
         var isOk = true
         val replacements = mutableMapOf<KeyCode, KeyStroke>()
-        replacementPreview.text
-                .split("\n")
-                .forEachIndexed { index, s ->
-                    val processed = StringProcessor.process(s)
-                    if (processed.isEmpty()) return@forEachIndexed
-                    try {
-                        val replacement = parseReplacement(processed)
-                        replacements[replacement.first] = replacement.second
-                    } catch (e: RuntimeException) {
-                        isOk = false
-                        val editor = replacementPreview.editor ?: return@forEachIndexed
-                        HintManagerImpl.getInstanceImpl().showErrorHint(editor, e.message!!)
-                        editor.markupModel.addLineHighlighter(index,
-                                HighlighterLayer.ERROR,
-                                editor.colorsScheme.getAttributes(CodeInsightColors.ERRORS_ATTRIBUTES))
-                        return@forEachIndexed
-                    }
-                }
+        replacementPreview.text.split("\n").forEachIndexed { index, s ->
+            val processed = StringProcessor.process(s)
+            if (processed.isEmpty()) return@forEachIndexed
+            try {
+                val replacement = parseReplacement(processed)
+                replacements[replacement.first] = replacement.second
+            } catch (e: RuntimeException) {
+                isOk = false
+                val editor = replacementPreview.editor ?: return@forEachIndexed
+                HintManagerImpl.getInstanceImpl().showErrorHint(editor, e.message!!)
+                editor.markupModel.addLineHighlighter(
+                    index,
+                    HighlighterLayer.ERROR,
+                    editor.colorsScheme.getAttributes(CodeInsightColors.ERRORS_ATTRIBUTES)
+                )
+                return@forEachIndexed
+            }
+        }
         dialogue.isOKActionEnabled = isOk
         if (isOk) {
             replacementPreview.editor?.markupModel?.removeAllHighlighters()
