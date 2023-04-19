@@ -29,15 +29,15 @@ private const val FRENCH = """; with ;
 - with -
 """
 
-private const val GERMAN = """; with ö
-= with ´
-/ with -
-` with <
-[ with ü
-\ with #
-] with +
-' with ä
-- with ß
+private const val GERMAN = """; with ,
+= with +
+/ with 7
+` with ´
+[ with 8
+\ with ß
+] with 9
+' with #
+- with -
 """
 
 private const val ITALIAN = """; with ò
